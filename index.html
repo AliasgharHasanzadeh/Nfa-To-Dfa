@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NFA TO DFA (DTranse)</title>
+    
+    <!-- استایل‌ها (Tailwind CSS) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- کتابخانه گراف (باید اینجا باشد تا ارور ندهد) -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <style>
+      .fall {
+        transform: translateY(8rem) rotateZ(20deg);
+        opacity: 0;
+        transition: all 0.4s ease;
+      }
+      /* اسکرول‌بار سفارشی برای جدول */
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #2b3035; }
+      ::-webkit-scrollbar-thumb { background: #495057; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #6c757d; }
+    </style>
+  </head>
+  <body class="flex justify-center flex-wrap w-full min-h-[100vh] bg-[#212529] text-[#f8f9fa] p-4 font-sans">
+    
+    <!-- پنل ورودی داده‌ها -->
+    <main class="w-[500px] flex flex-col flex-wrap gap-6 mb-10">
+      
+      <!-- Transitions -->
+      <div class="overflow-hidden w-[450px] flex flex-col items-center bg-[#343a40] p-4 rounded-2xl shadow-md">
+        <h2 class="w-full text-left mb-2 text-[#adb5bd] text-sm">Transitions (e.g. &(q0,a)=q1 or &(q0,ε)=q1)</h2>
+        <div class="w-full flex">
+          <input id="inpTrans" class="bg-[#2b3035] text-[#f8f9fa] px-3 py-2 w-full h-[40px] outline-none rounded-l-xl focus:ring-2 focus:ring-[#4dabf7]" type="text" placeholder="Add Transition" />
+          <button id="btn-add-trans" class="bg-[#4dabf7] text-[#212529] font-medium px-4 cursor-pointer h-[40px] rounded-r-xl hover:bg-[#339af0] transition">Add</button>
+        </div>
+        <ul id="trans" class="pt-4 w-full max-w-[450px] px-2 *:w-full *:bg-[#2b3035] *:mb-2 *:text-[#dee2e6] *:px-3 *:py-2 *:rounded-lg *:flex *:justify-between *:items-center *:gap-2"></ul>
+      </div>
+
+      <!-- Alphabet -->
+      <div class="w-[450px] flex flex-col items-center bg-[#343a40] p-4 rounded-2xl shadow-md">
+        <h2 class="w-full text-left mb-2 text-[#adb5bd] text-sm">Alphabet (Do not add ε here)</h2>
+        <div class="w-full flex">
+          <input id="inpAlphabets" class="bg-[#2b3035] text-[#f8f9fa] px-3 py-2 w-full h-[40px] outline-none rounded-l-xl focus:ring-2 focus:ring-[#4dabf7]" type="text" placeholder="Add Alphabet" />
+          <button id="btn-add-alphabet" class="bg-[#4dabf7] text-[#212529] font-medium px-4 cursor-pointer h-[40px] rounded-r-xl hover:bg-[#339af0] transition">Add</button>
+        </div>
+        <ul id="alphabets" class="pt-3 w-full max-w-[450px] px-2 *:w-full *:bg-[#2b3035] *:mb-2 *:text-[#dee2e6] *:px-3 *:py-2 *:rounded-lg *:flex *:justify-between *:items-center *:gap-2"></ul>
+      </div>
+
+      <!-- States -->
+      <div class="w-[450px] flex flex-col items-center bg-[#343a40] p-4 rounded-2xl shadow-md">
+        <h2 class="w-full text-left mb-2 text-[#adb5bd] text-sm">States</h2>
+        <div class="w-full flex">
+          <input id="inpStates" class="bg-[#2b3035] text-[#f8f9fa] px-3 py-2 w-full h-[40px] outline-none rounded-l-xl focus:ring-2 focus:ring-[#4dabf7]" type="text" placeholder="Add State" />
+          <button id="btn-add-state" class="bg-[#4dabf7] text-[#212529] font-medium px-4 cursor-pointer h-[40px] rounded-r-xl hover:bg-[#339af0] transition">Add</button>
+        </div>
+        <ul id="states" class="pt-3 w-full max-w-[450px] px-2 *:w-full *:bg-[#2b3035] *:mb-2 *:text-[#dee2e6] *:px-3 *:py-2 *:rounded-lg *:flex *:justify-between *:items-center *:gap-2"></ul>
+      </div>
+
+      <!-- Start State -->
+      <div class="w-[450px] flex items-center gap-4 bg-[#343a40] p-4 rounded-2xl shadow-md">
+        <label for="startState" class="text-[#f1f3f5] font-medium whitespace-nowrap">Start State:</label>
+        <select id="startState" class="flex-1 border border-[#495057] bg-[#2b3035] text-[#f8f9fa] px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-[#4dabf7] hover:border-[#4dabf7] cursor-pointer">
+          <option value="" disabled selected>Select state...</option>
+        </select>
+      </div>
+
+      <!-- Final States -->
+      <div class="w-[450px] flex items-center gap-4 bg-[#343a40] p-4 rounded-2xl shadow-md">
+        <label for="finalStates" class="text-[#f1f3f5] font-medium whitespace-nowrap">Final States:</label>
+        <select id="finalStates" multiple class="flex-1 h-[80px] border border-[#495057] bg-[#2b3035] text-[#f8f9fa] px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-[#4dabf7] hover:border-[#4dabf7] cursor-pointer"></select>
+      </div>
+
+      <!-- Calculate Button -->
+      <button id="btn-calc" class="bg-[#228be6] text-white font-bold text-lg px-6 py-3 cursor-pointer rounded-xl hover:bg-[#1c7ed6] transition shadow-lg w-[450px]">
+        Convert NFA to DFA
+      </button>
+    </main>
+
+    <!-- بخش گراف‌ها و جدول -->
+    <div class="w-[600px] flex flex-col gap-6">
+      
+      <!-- NFA Graph -->
+      <div class="flex justify-center items-center flex-col bg-[#343a40] p-4 rounded-2xl shadow-md border border-[#495057]">
+        <h1 class="text-xl font-bold mb-2 text-[#4dabf7]">Input NFA</h1>
+        <div id="inputDFA" class="w-[580px] h-[400px] bg-[#f8f9fa] rounded-lg border border-gray-300"></div>
+      </div>
+
+      <!-- DFA Graph -->
+      <div class="flex justify-center items-center flex-col bg-[#343a40] p-4 rounded-2xl shadow-md border border-[#495057]">
+        <h1 class="text-xl font-bold mb-2 text-[#4dabf7]">Equivalent DFA (DTranse)</h1>
+        <div id="outputDFA" class="w-[580px] h-[400px] bg-[#f8f9fa] rounded-lg border border-gray-300"></div>
+      </div>
+
+      <!-- Dtran Table (جدول جدید) -->
+      <div class="flex flex-col items-center bg-[#343a40] p-4 rounded-2xl shadow-md border border-[#495057] mb-10">
+        <h1 class="text-xl font-bold mb-4 text-[#4dabf7]">Dtran Table (Transition Table)</h1>
+        <div id="dtranTableContainer" class="w-[580px] overflow-x-auto rounded-lg">
+          <!-- جدول اینجا توسط JS ساخته می‌شود -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- اسکریپت‌ها -->
+    <script src="script/alghortim.js"></script>
+    <script src="script/logic.js"></script>
+  </body>
+</html>
