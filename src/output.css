@@ -675,3 +675,55 @@ li .flex {
     }
   }
 }
+
+/* Custom utilities for layout tweaks (responsive & max-width) */
+.max-w-\[500px\]{
+  max-width: 500px;
+}
+.max-w-\[600px\]{
+  max-width: 600px;
+}
+.mx-auto{
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (width >= 64rem){
+  .lg\:flex-row{
+    flex-direction: row;
+  }
+  .lg\:items-stretch{
+    align-items: stretch;
+  }
+  .lg\:mx-0{
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* Primary action button styling */
+#btn-calc{
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #4dabf7, #228be6);
+  box-shadow: 0 10px 25px rgba(34, 139, 230, 0.35);
+  border-radius: 0.9rem;
+}
+#btn-calc::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(255,255,255,0.35), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+#btn-calc:hover::before{
+  opacity: 1;
+}
+#btn-calc:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(34, 139, 230, 0.5);
+}
+#btn-calc:active{
+  transform: translateY(0);
+  box-shadow: 0 6px 15px rgba(34, 139, 230, 0.4);
+}
